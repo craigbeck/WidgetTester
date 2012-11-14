@@ -1,0 +1,21 @@
+# Widget Tester Specs
+
+## Graphing.todo
+- three styles
+- translate points
+
+## Window layout.todo
+- should not be resized too small
+
+## Mouse tracking.todo
+- track movements in graph view
+- draw attributed text position info at mouse position
+
+## Copy and Paste.todo
+- summarize button puts -summary into normal C&P buffer
+
+## Optional.todo
+- display data coordinates
+- keyboard modifier (ctrl, option etc) change coord drawing
+- zoom
+- gestures
