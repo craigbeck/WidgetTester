@@ -20,6 +20,7 @@
 		20A7610616420FE90023A567 /* WidgetTester.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A7610316420FE90023A567 /* WidgetTester.m */; };
 		20A7610816420FE90023A567 /* WidgetTestObservationPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A7610516420FE90023A567 /* WidgetTestObservationPoint.m */; };
 		20A7610D164214830023A567 /* WidgetTestRunView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A7610C164214830023A567 /* WidgetTestRunView.m */; };
+		930B48ED164B282E00317DD7 /* cat_icon.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 930B48EC164B282E00317DD7 /* cat_icon.iconset */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 		20A7610B164214830023A567 /* WidgetTestRunView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WidgetTestRunView.h; sourceTree = "<group>"; };
 		20A7610C164214830023A567 /* WidgetTestRunView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WidgetTestRunView.m; sourceTree = "<group>"; };
 		20A7610E164216CD0023A567 /* KeyStrings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyStrings.h; sourceTree = "<group>"; };
+		930B48EC164B282E00317DD7 /* cat_icon.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = cat_icon.iconset; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +87,7 @@
 		20A760BF16420FAE0023A567 = {
 			isa = PBXGroup;
 			children = (
+				930B48EC164B282E00317DD7 /* cat_icon.iconset */,
 				20A760D416420FAE0023A567 /* Widget Test Plotter */,
 				20A760F116420FAE0023A567 /* Widget Test PlotterTests */,
 				20A760CD16420FAE0023A567 /* Frameworks */,
@@ -252,6 +255,7 @@
 				20A760D916420FAE0023A567 /* InfoPlist.strings in Resources */,
 				20A760DF16420FAE0023A567 /* Credits.rtf in Resources */,
 				20A760E516420FAE0023A567 /* MainMenu.xib in Resources */,
+				930B48ED164B282E00317DD7 /* cat_icon.iconset in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +480,7 @@
 				20A760FE16420FAE0023A567 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		20A760FF16420FAE0023A567 /* Build configuration list for PBXNativeTarget "Widget Test PlotterTests" */ = {
 			isa = XCConfigurationList;
@@ -484,6 +489,7 @@
 				20A7610116420FAE0023A567 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

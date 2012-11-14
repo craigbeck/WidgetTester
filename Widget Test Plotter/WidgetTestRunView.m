@@ -23,7 +23,7 @@
 
 - (void)drawRect:(NSRect)dirtyRect {
 	NSRect bounds = [self bounds];
-	MyLog(@"drawRect: bounds %@", NSStringFromRect(bounds)); // 615 x 482
+//	MyLog(@"drawRect: bounds %@", NSStringFromRect(bounds)); // 615 x 482
     
     [[NSColor colorWithCalibratedRed:0.1 green:0.2 blue:0.2 alpha:1.0] set];
     [NSBezierPath fillRect:bounds];
@@ -44,6 +44,7 @@
     double yMax = self.widgetTester.sensorMaximum;
     double yRange = yMax - yMin;
     double yScale = bounds.size.height / yRange * self.magnification;
+//    double yMid = yRange / 2.0;
     
     
     [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.6 alpha:0.5] set];
@@ -65,21 +66,38 @@
     }
     
     
-    MyLog(@"range x:%f y:%f, scale x:%f y:%f", xRange, yRange, xScale, yScale);
+//    MyLog(@"range x:%f y:%f, scale x:%f y:%f", xRange, yRange, xScale, yScale);
     [pointsPath moveToPoint:bounds.origin];
     [gradPath moveToPoint:bounds.origin];
     
+    BOOL isFirstPoint = YES;
 	for (WidgetTestObservationPoint *observation in self.widgetTester.testData)
     {
         double xProjected = (observation.observationTime - xMin) * xScale;
         double yProjected = -1 * (((observation.voltage - yMin) * yScale) - bounds.size.height);
 		NSPoint projectedPoint = NSMakePoint(xProjected, yProjected);
         
-        [pointsPath lineToPoint:projectedPoint];
+        [pointsPath setFlatness:0.3];
+        [pointsPath setMiterLimit:5.0];
+        if (isFirstPoint)
+        {
+            [pointsPath moveToPoint:projectedPoint];
+            isFirstPoint = NO;
+        }
+        else
+        {
+            [pointsPath lineToPoint:projectedPoint];
+        }
         [gradPath lineToPoint:projectedPoint];
 	}
     [pointsPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
     [gradPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
+    NSBezierPath *xAxis = [NSBezierPath bezierPath];
+    double zero = -1 * (((0.0 - yMin) * yScale) - bounds.size.height);
+    [xAxis moveToPoint:NSMakePoint(bounds.origin.x, zero)];
+    [xAxis lineToPoint:NSMakePoint(bounds.size.width, zero)];
+    [[NSColor colorWithCalibratedRed:0.9 green:0 blue:0 alpha:0.7] set];
+    [xAxis stroke];
     
     // apply style
     NSColor *gradStartColor = [NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3];
@@ -100,9 +118,12 @@
     {
         double xProjected = (observation.observationTime - xMin) * xScale;
         double yProjected = -1 * (((observation.voltage - yMin) * yScale) - bounds.size.height);
-        double r = 4.0;
-        [[NSBezierPath bezierPathWithOvalInRect:NSMakeRect(xProjected-r, yProjected-r, r*2, r*2)] stroke];		
+        double r = 3.0;
+        NSBezierPath *dataPoint = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(xProjected-r, yProjected-r, r*2, r*2)];
+        [dataPoint setLineWidth:2.0];
+        [dataPoint stroke];
 	}
+    
     
 	switch (drawingStyleNumber) {
 		case 0:
@@ -141,14 +162,12 @@
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    MyLog(@"%@", event);
     double minMagnification = 0.25;
     double maxMagnification = 1.1;
-    double newMagnification = self.magnification + (event.magnification * 50);
+    double newMagnification = self.magnification + (event.magnification * 0.7);
     newMagnification = MAX(newMagnification, minMagnification);
     newMagnification = MIN(newMagnification, maxMagnification);
     self.magnification = newMagnification;
-    MyLog(@"m:%f", newMagnification);
     [self setNeedsDisplay:YES];
 }
 
