@@ -17,6 +17,12 @@
 - (id)initWithFrame:(NSRect)frame {
     if (self = [super initWithFrame:frame]) {
         _magnification = 1.0;
+        NSTrackingAreaOptions trackingOptions = NSTrackingCursorUpdate | NSTrackingEnabledDuringMouseDrag | NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp | NSTrackingMouseMoved;
+        NSTrackingArea *trackingArea = [[NSTrackingArea alloc] initWithRect:frame
+                                                     options:trackingOptions
+                                                       owner:self
+                                                    userInfo:nil];
+        [self addTrackingArea:trackingArea];
     }
     return self;
 }
@@ -140,6 +146,7 @@
 	
     }
 }
+
 
 #pragma mark - Mouse Events
 
