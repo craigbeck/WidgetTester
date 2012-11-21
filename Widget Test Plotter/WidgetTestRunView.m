@@ -194,6 +194,23 @@
 
 #pragma mark - Mouse Events
 
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    [self setNeedsDisplay:YES];
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    [self setNeedsDisplay:YES];
+    return YES;
+}
+
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     pointerPosition = [self convertPoint:theEvent.locationInWindow fromView:nil];
@@ -221,6 +238,11 @@
     newMagnification = MIN(newMagnification, maxMagnification);
     self.magnification = newMagnification;
     [self setNeedsDisplay:YES];
+}
+
+- (void)swipeWithEvent:(NSEvent *)event
+{
+    NSLog(@"swipe event: %@", event);
 }
 
 @end
