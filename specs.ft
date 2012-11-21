@@ -5,7 +5,7 @@
 - translate points
 
 ## Window layout.todo
-- should not be resized too small
+- should not be resized too small @done
 
 ## Mouse tracking.todo
 - track movements in graph view @done
