@@ -50,7 +50,12 @@ NSString *drawingStyleKey = @"drawingStyle";
     [self.testView setNeedsDisplay:YES];
 }
 
-- (IBAction)summarizeToCopyBuffer:(id)sender {
+- (IBAction)summarizeToCopyBuffer:(id)sender
+{
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+    BOOL copied = [pasteboard writeObjects:@[[self.widgetTester summary]]];
+    if (!copied) NSLog(@"copy failed");
 }
 
 @end

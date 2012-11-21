@@ -8,14 +8,14 @@
 - should not be resized too small
 
 ## Mouse tracking.todo
-- track movements in graph view
-- draw attributed text position info at mouse position
+- track movements in graph view @done
+- draw attributed text position info at mouse position @done
 
 ## Copy and Paste.todo
-- summarize button puts -summary into normal C&P buffer
+- summarize button puts -summary into normal C&P buffer @done
 
 ## Optional.todo
-- display data coordinates
-- keyboard modifier (ctrl, option etc) change coord drawing
-- zoom
+- display data coordinates @done
+- keyboard modifier (ctrl, option etc) change coord drawing @done
+- zoom @done
 - gestures
