@@ -27,7 +27,8 @@
         {
             pointerPosition = [self mousePositionViewCoordinates];
         }
-        [self addTrackingArea:[self newTrackingArea]];
+        [self addTrackingArea:[[self newTrackingArea] autorelease]];
+        [self.window makeFirstResponder:self];
     }
     return self;
 }
@@ -121,46 +122,29 @@
     [[[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0 alpha:0.05] endingColor:[NSColor colorWithCalibratedRed:0.5 green:0 blue:0 alpha:0.25]] drawInBezierPath:[NSBezierPath bezierPathWithRect:bounds] angle:270];
     
     
-    [[NSColor colorWithCalibratedWhite:0.9 alpha:0.5] set];
-    
-    NSBezierPath *targetingVertical = [NSBezierPath bezierPath];
-    [targetingVertical moveToPoint:NSMakePoint(pointerPosition.x, bounds.origin.y)];
-    [targetingVertical lineToPoint:NSMakePoint(pointerPosition.x, bounds.size.height)];
-    [targetingVertical setLineWidth:1.0];
-    [targetingVertical stroke];
-    
-    NSBezierPath *targetingHorizontal = [NSBezierPath bezierPath];
-    [targetingHorizontal moveToPoint:NSMakePoint(bounds.origin.x, pointerPosition.y)];
-    [targetingHorizontal lineToPoint:NSMakePoint(bounds.size.width, pointerPosition.y)];
-    [targetingHorizontal setLineWidth:1.0];
-    [targetingHorizontal stroke];
+    [self drawPointer];
     
     NSColor *dataPointColor = [NSColor colorWithCalibratedWhite:0.9 alpha:0.7];
-    NSColor *dataPointHighlight = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
+    NSColor *dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
     for (WidgetTestObservationPoint *observation in self.widgetTester.testData)
     {
         [dataPointColor set];
-        double xProjected = (observation.observationTime - xMin) * xScale;
-        double yProjected = -1 * (((observation.voltage - yMin) * yScale) - bounds.size.height);
+        
+        NSPoint projected;
+        projected.x = (observation.observationTime - xMin) * xScale;
+        projected.y = -1 * (((observation.voltage - yMin) * yScale) - bounds.size.height);
+        
         double r = 3.0;
-        NSBezierPath *dataPoint = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(xProjected-r, yProjected-r, r*2, r*2)];
+        NSBezierPath *dataPoint = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(projected.x - r, projected.y - r, r*2, r*2)];
         [dataPoint setLineWidth:2.0];
         if ([dataPoint containsPoint:pointerPosition])
         {
             // draw data point value label
-            NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                        [NSFont fontWithName:@"Monaco" size:11],
-                                        NSFontAttributeName,
-                                        [NSColor whiteColor],
-                                        NSForegroundColorAttributeName,
-                                        nil];
             NSString *labelText = [[NSString alloc] initWithFormat:@"time: %f\nvoltage: %f", observation.observationTime, observation.voltage];
-            NSAttributedString *label = [[NSAttributedString alloc] initWithString:labelText attributes: attributes];
-            NSSize size = [label size];
-            [[NSColor colorWithCalibratedWhite:0.0 alpha:0.6] set];
-            [NSBezierPath fillRect:NSMakeRect(xProjected + 4, yProjected - 34, size.width + 8, size.height + 4)];
-            [label drawAtPoint:NSMakePoint(xProjected + 8, yProjected - 32)];
-            [dataPointHighlight set];
+
+            [self drawLabel:labelText forDataPoint:pointerPosition];
+            [dataPointHighlightColor set];
+            [dataPoint setLineWidth:3.0];
         }
         [dataPoint stroke];
 	}
@@ -177,9 +161,58 @@
 
 			break;
 	}
-	if (self.shouldDrawMouseInfo) {
-	
+	if (self.shouldDrawMouseInfo)
+    {
+        NSString *labelText = [[NSString alloc] initWithFormat:@"X: %f\nY: %f", pointerPosition.x, pointerPosition.y];
+        [self drawLabel:labelText atPoint:NSMakePoint(8, 8)];
+        [labelText release];
     }
+}
+
+- (void)drawLabel:(NSString *)string forDataPoint:(NSPoint)point
+{
+    NSPoint labelPosition = { point.x + 4, point.y - 38 };
+//    labelPosition.x = point.x + 4;
+//    labelPosition.y = point.y - 36;
+    [self drawLabel:string atPoint:labelPosition];
+}
+
+- (void)drawLabel:(NSString *)string atPoint:(NSPoint)point
+{
+    NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                [NSFont fontWithName:@"Monaco" size:11],
+                                NSFontAttributeName,
+                                [NSColor whiteColor],
+                                NSForegroundColorAttributeName,
+                                nil];
+    NSAttributedString *label = [[NSAttributedString alloc] initWithString:string attributes: attributes];
+    
+    NSSize size = [label size];
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:0.6] set];
+    
+    [NSBezierPath fillRect:NSMakeRect(point.x, point.y, size.width + 8, size.height + 4)];
+    
+    [label drawAtPoint:NSMakePoint(point.x + 4, point.y + 2)];
+    [label release];
+    [attributes release];
+}
+
+- (void)drawPointer
+{
+    [[NSColor colorWithCalibratedWhite:0.9 alpha:0.5] set];
+    
+    NSRect bounds = [self frame];
+    NSBezierPath *targetingVertical = [NSBezierPath bezierPath];
+    [targetingVertical moveToPoint:NSMakePoint(pointerPosition.x, bounds.origin.y)];
+    [targetingVertical lineToPoint:NSMakePoint(pointerPosition.x, bounds.size.height)];
+    [targetingVertical setLineWidth:1.0];
+    [targetingVertical stroke];
+    
+    NSBezierPath *targetingHorizontal = [NSBezierPath bezierPath];
+    [targetingHorizontal moveToPoint:NSMakePoint(bounds.origin.x, pointerPosition.y)];
+    [targetingHorizontal lineToPoint:NSMakePoint(bounds.size.width, pointerPosition.y)];
+    [targetingHorizontal setLineWidth:1.0];
+    [targetingHorizontal stroke];
 }
 
 - (NSTrackingArea *)newTrackingArea
@@ -225,6 +258,22 @@
 - (void)mouseExited:(NSEvent *)theEvent
 {
     [NSCursor unhide];
+}
+
+#pragma mark - Keyboard Events
+
+- (void)flagsChanged:(NSEvent *)theEvent
+{
+    if ([theEvent modifierFlags] & NSShiftKeyMask)
+    {
+        self.shouldDrawMouseInfo = YES;
+        [self setNeedsDisplay:YES];
+    }
+    else
+    {
+        self.shouldDrawMouseInfo = NO;
+        [self setNeedsDisplay:YES];
+    }
 }
 
 #pragma mark - Gesture Events
