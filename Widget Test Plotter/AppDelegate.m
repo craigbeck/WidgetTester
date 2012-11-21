@@ -29,7 +29,6 @@ NSString *drawingStyleKey = @"drawingStyle";
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    LogMethod();
     [self.stylePicker setSelectedSegment:[[NSUserDefaults standardUserDefaults] integerForKey:drawingStyleKey]];
     
     self.widgetTester = [[[WidgetTester alloc] init] autorelease];
@@ -40,7 +39,6 @@ NSString *drawingStyleKey = @"drawingStyle";
 
 - (IBAction)changeDrawingStyle:(NSSegmentedControl *)sender
 {
-    LogMethod();
     [[NSUserDefaults standardUserDefaults] setInteger:sender.selectedSegment
                                                forKey:drawingStyleKey];
     [self.testView setNeedsDisplay:YES];
@@ -48,7 +46,6 @@ NSString *drawingStyleKey = @"drawingStyle";
 
 - (IBAction)performNewTest:(id)sender
 {
-    LogMethod();
     [self.widgetTester performTest];
     [self.testView setNeedsDisplay:YES];
 }
