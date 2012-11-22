@@ -39,20 +39,25 @@
 	NSUInteger drawingStyleNumber = [[NSUserDefaults standardUserDefaults] integerForKey:drawingStyleKey];
     NSArray *projectedObservations = [self projectObservations];
     
-    [self drawTicks];
-    [self drawLines:projectedObservations];
-    [self drawPointer];
-    [self drawDataPoints:projectedObservations];
     
 	switch (drawingStyleNumber) {
 		case 0:
-
+            
+            [self drawTicks];
+            [self drawLines:projectedObservations];
+            [self drawPointer];
+            [self drawDataPoints:projectedObservations];
 			break;
 		case 1:
-
+            [self drawTicks];
+            [self drawDataPoints:projectedObservations];
+            [self drawPointer];
 			break;
 		case 2:
-
+            
+            [self drawTicks];
+            [self drawLines:projectedObservations];
+            [self drawPointer];
 			break;
 	}
 	if (self.shouldDrawMouseInfo)
@@ -341,6 +346,11 @@
         self.shouldDrawMouseInfo = NO;
         [self setNeedsDisplay:YES];
     }
+}
+
+-(void)keyDown:(NSEvent *)theEvent
+{
+    NSLog(@"%@", theEvent);
 }
 
 #pragma mark - Gesture Events
