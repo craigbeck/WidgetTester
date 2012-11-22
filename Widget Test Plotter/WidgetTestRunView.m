@@ -16,6 +16,15 @@
 @implementation WidgetTestRunView
 {
     NSPoint pointerPosition;
+    NSColor *lineColor;
+    NSColor *tickColor;
+    NSColor *backgroundPrimary;
+    NSColor *dataPointColor;
+    NSColor *dataPointHighlightColor;
+    NSColor *dataAreaColor;
+    BOOL showTicks;
+    BOOL showLine;
+    BOOL showPoints;
 }
 
 - (id)initWithFrame:(NSRect)frame
@@ -30,6 +39,9 @@
         }
         [self addTrackingArea:[[self newTrackingArea] autorelease]];
         [self.window makeFirstResponder:self];
+        showLine = YES;
+        showPoints = YES;
+        showTicks = YES;
     }
     return self;
 }
@@ -42,24 +54,36 @@
     
 	switch (drawingStyleNumber) {
 		case 0:
-            
-            [self drawTicks];
-            [self drawLines:projectedObservations];
-            [self drawPointer];
-            [self drawDataPoints:projectedObservations];
+            backgroundPrimary = [NSColor colorWithCalibratedRed:0.1 green:0.2 blue:0.2 alpha:1.0];
+            tickColor = [NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.6 alpha:0.5];
+            lineColor = [NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.9 alpha:0.9];
+            dataAreaColor = [NSColor colorWithCalibratedRed:0.1 green:0.7 blue:0.7 alpha:0.5];
+            dataPointColor = [NSColor colorWithCalibratedWhite:0.9 alpha:0.7];
+            dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
 			break;
 		case 1:
-            [self drawTicks];
-            [self drawDataPoints:projectedObservations];
-            [self drawPointer];
+            backgroundPrimary = [NSColor colorWithCalibratedRed:0.6 green:0.2 blue:0.2 alpha:1.0];
+            tickColor = [NSColor colorWithCalibratedRed:0.9 green:0.1 blue:0.6 alpha:0.5];
+            lineColor = [NSColor colorWithCalibratedRed:0.9 green:0.6 blue:0.3 alpha:0.9];
+            dataAreaColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.2];
+            dataPointColor = [NSColor colorWithCalibratedWhite:0.9 alpha:0.7];
+            dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
 			break;
 		case 2:
-            
-            [self drawTicks];
-            [self drawLines:projectedObservations];
-            [self drawPointer];
+            backgroundPrimary = [NSColor colorWithCalibratedRed:0.1 green:0.2 blue:0.2 alpha:1.0];
+            tickColor = [NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.6 alpha:0.5];
+            lineColor = [NSColor colorWithCalibratedRed:1.0 green:7.0 blue:0.2 alpha:0.9];
+            dataAreaColor = [NSColor colorWithCalibratedRed:0.1 green:0.3 blue:1.0 alpha:0.7];
+            dataPointColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.7];
+            dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
 			break;
 	}
+    
+    [self drawTicks];
+    [self drawLines:projectedObservations];
+    [self drawPointer];
+    [self drawDataPoints:projectedObservations];
+    
 	if (self.shouldDrawMouseInfo)
     {
         NSString *labelText = [[NSString alloc] initWithFormat:@"X: %f\nY: %f", pointerPosition.x, pointerPosition.y];
@@ -108,25 +132,28 @@
 {
     NSRect bounds = [self frame];
     
-    [[NSColor colorWithCalibratedRed:0.1 green:0.2 blue:0.2 alpha:1.0] set];
+    [backgroundPrimary set];
     [NSBezierPath fillRect:bounds];
     
-    [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.6 alpha:0.5] set];
-    for (int tick = 1; tick < 10; tick++)
+    if (showTicks)
     {
-        double xTickScale = bounds.size.height/10;
-        NSBezierPath *xTick = [NSBezierPath bezierPath];
-        [xTick moveToPoint:NSMakePoint(bounds.origin.x, xTickScale * tick)];
-        [xTick lineToPoint:NSMakePoint(bounds.size.width, xTickScale * tick)];
-        [xTick setLineWidth:0.8];
-        [xTick stroke];
-        
-        double yTickScale = bounds.size.width/10;
-        NSBezierPath *yTick = [NSBezierPath bezierPath];
-        [yTick moveToPoint:NSMakePoint(yTickScale * tick, bounds.origin.y)];
-        [yTick lineToPoint:NSMakePoint(yTickScale * tick, bounds.size.width)];
-        [yTick setLineWidth:0.8];
-        [yTick stroke];
+        [tickColor set];
+        for (int tick = 1; tick < 10; tick++)
+        {
+            double xTickScale = bounds.size.height/10;
+            NSBezierPath *xTick = [NSBezierPath bezierPath];
+            [xTick moveToPoint:NSMakePoint(bounds.origin.x, xTickScale * tick)];
+            [xTick lineToPoint:NSMakePoint(bounds.size.width, xTickScale * tick)];
+            [xTick setLineWidth:0.8];
+            [xTick stroke];
+            
+            double yTickScale = bounds.size.width/10;
+            NSBezierPath *yTick = [NSBezierPath bezierPath];
+            [yTick moveToPoint:NSMakePoint(yTickScale * tick, bounds.origin.y)];
+            [yTick lineToPoint:NSMakePoint(yTickScale * tick, bounds.size.width)];
+            [yTick setLineWidth:0.8];
+            [yTick stroke];
+        }
     }
 }
 
@@ -158,40 +185,25 @@
 	}
     [pointsPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
     [gradPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
-    NSBezierPath *xAxis = [NSBezierPath bezierPath];
-    
-    
-    double yMin = self.widgetTester.sensorMinimum;
-    double yMax = self.widgetTester.sensorMaximum;
-    double yRange = yMax - yMin;
-    double yScale = bounds.size.height / yRange * self.magnification;
-    
-    double zero = -1 * (((0.0 - yMin) * yScale) - bounds.size.height);
-    [xAxis moveToPoint:NSMakePoint(bounds.origin.x, zero)];
-    [xAxis lineToPoint:NSMakePoint(bounds.size.width, zero)];
-    [[NSColor colorWithCalibratedRed:0.9 green:0 blue:0 alpha:0.7] set];
-    [xAxis stroke];
     
     // apply style
     NSColor *gradStartColor = [NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3];
-    NSColor *gradEndColor = [NSColor colorWithCalibratedRed:0.1 green:0.7 blue:0.7 alpha:0.5];
+    NSColor *gradEndColor = dataAreaColor;
     NSGradient *grad = [[NSGradient alloc] initWithStartingColor:gradStartColor endingColor:gradEndColor];
     [grad drawInBezierPath:gradPath angle:90];
 	[grad release];
     
-    [pointsPath setLineWidth:2.0];
-    [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.9 alpha:0.9] set];
-    [pointsPath stroke];
-    
     grad = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0 alpha:0.05] endingColor:[NSColor colorWithCalibratedRed:0.5 green:0 blue:0 alpha:0.25]];
     [grad drawInBezierPath:[NSBezierPath bezierPathWithRect:bounds] angle:270];
     [grad release];
+    
+    [pointsPath setLineWidth:2.0];
+    [lineColor set];
+    if (showLine) [pointsPath stroke];
 }
 
 - (void)drawDataPoints:(NSArray *)data
 {
-    NSColor *dataPointColor = [NSColor colorWithCalibratedWhite:0.9 alpha:0.7];
-    NSColor *dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
     for (ProjectedDataPoint *point in data)
     {
         [dataPointColor set];
@@ -209,7 +221,7 @@
             [dataPointHighlightColor set];
             [dataPoint setLineWidth:3.0];
         }
-        [dataPoint stroke];
+        if (showPoints) [dataPoint stroke];
 	}
 }
 
@@ -350,7 +362,11 @@
 
 -(void)keyDown:(NSEvent *)theEvent
 {
-    NSLog(@"%@", theEvent);
+    NSString *key = [theEvent charactersIgnoringModifiers];
+    if ([key isCaseInsensitiveLike:@"L"]) showLine = !showLine;
+    if ([key isCaseInsensitiveLike:@"P"]) showPoints = !showPoints;
+    if ([key isCaseInsensitiveLike:@"T"]) showTicks = !showTicks;
+    [self setNeedsDisplay:YES];
 }
 
 #pragma mark - Gesture Events
