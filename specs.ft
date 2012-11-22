@@ -2,7 +2,7 @@
 
 ## Graphing.todo
 - three styles
-- translate points
+- translate points (refactoring) @done
 
 ## Window layout.todo
 - should not be resized too small @done

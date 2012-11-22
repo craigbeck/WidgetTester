@@ -21,6 +21,7 @@
 		20A7610816420FE90023A567 /* WidgetTestObservationPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A7610516420FE90023A567 /* WidgetTestObservationPoint.m */; };
 		20A7610D164214830023A567 /* WidgetTestRunView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A7610C164214830023A567 /* WidgetTestRunView.m */; };
 		930B48ED164B282E00317DD7 /* cat_icon.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 930B48EC164B282E00317DD7 /* cat_icon.iconset */; };
+		93AB80AA165D945100EE1E93 /* ProjectedDataPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 93AB80A9165D945100EE1E93 /* ProjectedDataPoint.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,8 @@
 		20A7610C164214830023A567 /* WidgetTestRunView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WidgetTestRunView.m; sourceTree = "<group>"; };
 		20A7610E164216CD0023A567 /* KeyStrings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyStrings.h; sourceTree = "<group>"; };
 		930B48EC164B282E00317DD7 /* cat_icon.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = cat_icon.iconset; sourceTree = "<group>"; };
+		93AB80A8165D945100EE1E93 /* ProjectedDataPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProjectedDataPoint.h; sourceTree = "<group>"; };
+		93AB80A9165D945100EE1E93 /* ProjectedDataPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProjectedDataPoint.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +136,8 @@
 				20A760E316420FAE0023A567 /* MainMenu.xib */,
 				20A7610B164214830023A567 /* WidgetTestRunView.h */,
 				20A7610C164214830023A567 /* WidgetTestRunView.m */,
+				93AB80A8165D945100EE1E93 /* ProjectedDataPoint.h */,
+				93AB80A9165D945100EE1E93 /* ProjectedDataPoint.m */,
 				20A7610A16420FF00023A567 /* Widget Tester */,
 				20A760D516420FAE0023A567 /* Supporting Files */,
 			);
@@ -295,6 +300,7 @@
 				20A7610616420FE90023A567 /* WidgetTester.m in Sources */,
 				20A7610816420FE90023A567 /* WidgetTestObservationPoint.m in Sources */,
 				20A7610D164214830023A567 /* WidgetTestRunView.m in Sources */,
+				93AB80AA165D945100EE1E93 /* ProjectedDataPoint.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

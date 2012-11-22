@@ -11,6 +11,7 @@
 #import "WidgetTestObservationPoint.h"
 #import "KeyStrings.h"
 #import <AppKit/NSBezierPath.h>
+#import "ProjectedDataPoint.h"
 
 @implementation WidgetTestRunView
 {
@@ -35,120 +36,13 @@
 
 - (void)drawRect:(NSRect)dirtyRect
 {
-	NSRect bounds = [self bounds];
-    
-    [[NSColor colorWithCalibratedRed:0.1 green:0.2 blue:0.2 alpha:1.0] set];
-    [NSBezierPath fillRect:bounds];
-	
-	NSBezierPath *pointsPath = [NSBezierPath bezierPath];
-    NSBezierPath *gradPath = [NSBezierPath bezierPath];
-    
-    [pointsPath setLineCapStyle:NSRoundLineCapStyle];
-    [pointsPath setLineJoinStyle:NSRoundLineJoinStyle];
-	
 	NSUInteger drawingStyleNumber = [[NSUserDefaults standardUserDefaults] integerForKey:drawingStyleKey];
-    double xMax = self.widgetTester.timeMaximum;
-    double xMin = self.widgetTester.timeMinimum;
-    double xRange = xMax - xMin;
-    double xScale = bounds.size.width / xRange;
+    NSArray *projectedObservations = [self projectObservations];
     
-    double yMin = self.widgetTester.sensorMinimum;
-    double yMax = self.widgetTester.sensorMaximum;
-    double yRange = yMax - yMin;
-    double yScale = bounds.size.height / yRange * self.magnification;
-    
-    
-    [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.6 alpha:0.5] set];
-    for (int tick = 1; tick < 10; tick++)
-    {
-        double xTickScale = bounds.size.height/10;
-        NSBezierPath *xTick = [NSBezierPath bezierPath];
-        [xTick moveToPoint:NSMakePoint(bounds.origin.x, xTickScale * tick)];
-        [xTick lineToPoint:NSMakePoint(bounds.size.width, xTickScale * tick)];
-        [xTick setLineWidth:0.8];
-        [xTick stroke];
-        
-        double yTickScale = bounds.size.width/10;
-        NSBezierPath *yTick = [NSBezierPath bezierPath];
-        [yTick moveToPoint:NSMakePoint(yTickScale * tick, bounds.origin.y)];
-        [yTick lineToPoint:NSMakePoint(yTickScale * tick, bounds.size.width)];
-        [yTick setLineWidth:0.8];
-        [yTick stroke];
-    }
-    
-    [pointsPath moveToPoint:bounds.origin];
-    [gradPath moveToPoint:bounds.origin];
-    
-    BOOL isFirstPoint = YES;
-	for (WidgetTestObservationPoint *observation in self.widgetTester.testData)
-    {
-        double xProjected = (observation.observationTime - xMin) * xScale;
-        double yProjected = -1 * (((observation.voltage - yMin) * yScale) - bounds.size.height);
-		NSPoint projectedPoint = NSMakePoint(xProjected, yProjected);
-        
-        [pointsPath setFlatness:0.3];
-        [pointsPath setMiterLimit:5.0];
-        if (isFirstPoint)
-        {
-            [pointsPath moveToPoint:projectedPoint];
-            isFirstPoint = NO;
-        }
-        else
-        {
-            [pointsPath lineToPoint:projectedPoint];
-        }
-        [gradPath lineToPoint:projectedPoint];
-	}
-    [pointsPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
-    [gradPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
-    NSBezierPath *xAxis = [NSBezierPath bezierPath];
-    double zero = -1 * (((0.0 - yMin) * yScale) - bounds.size.height);
-    [xAxis moveToPoint:NSMakePoint(bounds.origin.x, zero)];
-    [xAxis lineToPoint:NSMakePoint(bounds.size.width, zero)];
-    [[NSColor colorWithCalibratedRed:0.9 green:0 blue:0 alpha:0.7] set];
-    [xAxis stroke];
-    
-    // apply style
-    NSColor *gradStartColor = [NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3];
-    NSColor *gradEndColor = [NSColor colorWithCalibratedRed:0.1 green:0.7 blue:0.7 alpha:0.5];
-    NSGradient *grad = [[NSGradient alloc] initWithStartingColor:gradStartColor endingColor:gradEndColor];
-    [grad drawInBezierPath:gradPath angle:90];
-	
-    
-    [pointsPath setLineWidth:2.0];
-    [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.9 alpha:0.9] set];
-    [pointsPath stroke];
-    
-    [[[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0 alpha:0.05] endingColor:[NSColor colorWithCalibratedRed:0.5 green:0 blue:0 alpha:0.25]] drawInBezierPath:[NSBezierPath bezierPathWithRect:bounds] angle:270];
-    
-    
+    [self drawTicks];
+    [self drawLines:projectedObservations];
     [self drawPointer];
-    
-    NSColor *dataPointColor = [NSColor colorWithCalibratedWhite:0.9 alpha:0.7];
-    NSColor *dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
-    for (WidgetTestObservationPoint *observation in self.widgetTester.testData)
-    {
-        [dataPointColor set];
-        
-        NSPoint projected;
-        projected.x = (observation.observationTime - xMin) * xScale;
-        projected.y = -1 * (((observation.voltage - yMin) * yScale) - bounds.size.height);
-        
-        double r = 3.0;
-        NSBezierPath *dataPoint = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(projected.x - r, projected.y - r, r*2, r*2)];
-        [dataPoint setLineWidth:2.0];
-        if ([dataPoint containsPoint:pointerPosition])
-        {
-            // draw data point value label
-            NSString *labelText = [[NSString alloc] initWithFormat:@"time: %f\nvoltage: %f", observation.observationTime, observation.voltage];
-
-            [self drawLabel:labelText forDataPoint:pointerPosition];
-            [dataPointHighlightColor set];
-            [dataPoint setLineWidth:3.0];
-        }
-        [dataPoint stroke];
-	}
-    
+    [self drawDataPoints:projectedObservations];
     
 	switch (drawingStyleNumber) {
 		case 0:
@@ -169,12 +63,179 @@
     }
 }
 
+- (double)xScaleFactor
+{
+    double xMax = self.widgetTester.timeMaximum;
+    double xMin = self.widgetTester.timeMinimum;
+    double xRange = xMax - xMin;
+    return self.frame.size.width / xRange;
+}
+
+- (double)yScaleFactor
+{
+    double yMin = self.widgetTester.sensorMinimum;
+    double yMax = self.widgetTester.sensorMaximum;
+    double yRange = yMax - yMin;
+    return self.frame.size.height / yRange * self.magnification;
+}
+
+- (NSArray*)projectObservations
+{
+    NSRect bounds = self.frame;
+    double xScale = [self xScaleFactor];
+    double yScale = [self yScaleFactor];
+    
+    NSMutableArray *projections = [[NSMutableArray alloc] initWithCapacity:[self.widgetTester.testData count]];
+    
+    for (WidgetTestObservationPoint *observation in self.widgetTester.testData)
+    {
+        double xProjected = (observation.observationTime - self.widgetTester.timeMinimum) * xScale;
+        double yProjected = -1 * (((observation.voltage - self.widgetTester.sensorMinimum) * yScale) - bounds.size.height);
+        NSPoint projected = NSMakePoint(xProjected, yProjected);
+        ProjectedDataPoint *projectedPoint = [[[ProjectedDataPoint alloc] initWith:observation andPoint:projected] autorelease];
+        [projections addObject:projectedPoint];
+    }
+    
+    return [projections autorelease];
+}
+
+- (void)drawTicks
+{
+    NSRect bounds = [self frame];
+    
+    [[NSColor colorWithCalibratedRed:0.1 green:0.2 blue:0.2 alpha:1.0] set];
+    [NSBezierPath fillRect:bounds];
+    
+    [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.6 alpha:0.5] set];
+    for (int tick = 1; tick < 10; tick++)
+    {
+        double xTickScale = bounds.size.height/10;
+        NSBezierPath *xTick = [NSBezierPath bezierPath];
+        [xTick moveToPoint:NSMakePoint(bounds.origin.x, xTickScale * tick)];
+        [xTick lineToPoint:NSMakePoint(bounds.size.width, xTickScale * tick)];
+        [xTick setLineWidth:0.8];
+        [xTick stroke];
+        
+        double yTickScale = bounds.size.width/10;
+        NSBezierPath *yTick = [NSBezierPath bezierPath];
+        [yTick moveToPoint:NSMakePoint(yTickScale * tick, bounds.origin.y)];
+        [yTick lineToPoint:NSMakePoint(yTickScale * tick, bounds.size.width)];
+        [yTick setLineWidth:0.8];
+        [yTick stroke];
+    }
+}
+
+- (void)drawLines:(NSArray *)data
+{
+    NSRect bounds = self.frame;
+	NSBezierPath *pointsPath = [NSBezierPath bezierPath];
+    NSBezierPath *gradPath = [NSBezierPath bezierPath];
+    
+    [pointsPath setLineCapStyle:NSRoundLineCapStyle];
+    [pointsPath setLineJoinStyle:NSRoundLineJoinStyle];
+    [pointsPath moveToPoint:bounds.origin];
+    [gradPath moveToPoint:bounds.origin];
+    
+    BOOL isFirstPoint = YES;
+	for (ProjectedDataPoint *dataPoint in data)
+    {
+        [pointsPath setMiterLimit:5.0];
+        if (isFirstPoint)
+        {
+            [pointsPath moveToPoint:dataPoint.projected];
+            isFirstPoint = NO;
+        }
+        else
+        {
+            [pointsPath lineToPoint:dataPoint.projected];
+        }
+        [gradPath lineToPoint:dataPoint.projected];
+	}
+    [pointsPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
+    [gradPath lineToPoint:NSMakePoint(bounds.size.width, bounds.origin.y)];
+    NSBezierPath *xAxis = [NSBezierPath bezierPath];
+    
+    
+    double yMin = self.widgetTester.sensorMinimum;
+    double yMax = self.widgetTester.sensorMaximum;
+    double yRange = yMax - yMin;
+    double yScale = bounds.size.height / yRange * self.magnification;
+    
+    double zero = -1 * (((0.0 - yMin) * yScale) - bounds.size.height);
+    [xAxis moveToPoint:NSMakePoint(bounds.origin.x, zero)];
+    [xAxis lineToPoint:NSMakePoint(bounds.size.width, zero)];
+    [[NSColor colorWithCalibratedRed:0.9 green:0 blue:0 alpha:0.7] set];
+    [xAxis stroke];
+    
+    // apply style
+    NSColor *gradStartColor = [NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3];
+    NSColor *gradEndColor = [NSColor colorWithCalibratedRed:0.1 green:0.7 blue:0.7 alpha:0.5];
+    NSGradient *grad = [[NSGradient alloc] initWithStartingColor:gradStartColor endingColor:gradEndColor];
+    [grad drawInBezierPath:gradPath angle:90];
+	[grad release];
+    
+    [pointsPath setLineWidth:2.0];
+    [[NSColor colorWithCalibratedRed:0.1 green:0.9 blue:0.9 alpha:0.9] set];
+    [pointsPath stroke];
+    
+    grad = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0 alpha:0.05] endingColor:[NSColor colorWithCalibratedRed:0.5 green:0 blue:0 alpha:0.25]];
+    [grad drawInBezierPath:[NSBezierPath bezierPathWithRect:bounds] angle:270];
+    [grad release];
+}
+
+- (void)drawDataPoints:(NSArray *)data
+{
+    NSColor *dataPointColor = [NSColor colorWithCalibratedWhite:0.9 alpha:0.7];
+    NSColor *dataPointHighlightColor = [NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.8];
+    for (ProjectedDataPoint *point in data)
+    {
+        [dataPointColor set];
+        
+        double r = 3.0;
+        NSBezierPath *dataPoint = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(point.projected.x - r, point.projected.y - r, r*2, r*2)];
+        [dataPoint setLineWidth:2.0];
+        if ([dataPoint containsPoint:pointerPosition])
+        {
+            // draw data point value label
+            NSString *labelText = [[NSString alloc] initWithFormat:@"time: %f\nvoltage: %f", point.data.observationTime, point.data.voltage];
+            
+            [self drawLabel:labelText forDataPoint:pointerPosition];
+            [labelText release];
+            [dataPointHighlightColor set];
+            [dataPoint setLineWidth:3.0];
+        }
+        [dataPoint stroke];
+	}
+}
+
 - (void)drawLabel:(NSString *)string forDataPoint:(NSPoint)point
 {
-    NSPoint labelPosition = { point.x + 4, point.y - 38 };
-//    labelPosition.x = point.x + 4;
-//    labelPosition.y = point.y - 36;
-    [self drawLabel:string atPoint:labelPosition];
+    NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                [NSFont fontWithName:@"Monaco" size:11],
+                                NSFontAttributeName,
+                                [NSColor whiteColor],
+                                NSForegroundColorAttributeName,
+                                nil];
+    NSAttributedString *label = [[NSAttributedString alloc] initWithString:string attributes: attributes];
+    NSSize size = [label size];
+    
+    double rightOffset = point.x + 4;
+    double leftOffset = point.x - 12 - size.width;
+    double upOffest = point.y + 4;
+    double downOffset = point.y - 38;
+    
+    double xOffset = rightOffset;
+    double yOffset = downOffset;
+    
+    if (rightOffset + size.width > self.bounds.size.width - 8.0) xOffset = leftOffset;
+    if (downOffset < 8.0) yOffset = upOffest;
+    
+    NSPoint labelPosition = NSMakePoint(xOffset, yOffset);
+    
+    [self drawAttributedString:label atPoint:labelPosition];
+    
+    [label release];
+    [attributes release];
 }
 
 - (void)drawLabel:(NSString *)string atPoint:(NSPoint)point
@@ -187,14 +248,20 @@
                                 nil];
     NSAttributedString *label = [[NSAttributedString alloc] initWithString:string attributes: attributes];
     
-    NSSize size = [label size];
-    [[NSColor colorWithCalibratedWhite:0.0 alpha:0.6] set];
     
-    [NSBezierPath fillRect:NSMakeRect(point.x, point.y, size.width + 8, size.height + 4)];
+    [self drawAttributedString:label atPoint:NSMakePoint(point.x + 4, point.y + 2)];
     
-    [label drawAtPoint:NSMakePoint(point.x + 4, point.y + 2)];
     [label release];
     [attributes release];
+}
+
+- (void)drawAttributedString:(NSAttributedString *)string atPoint:(NSPoint)point
+{
+    NSSize size = [string size];
+    
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:0.6] set];
+    [NSBezierPath fillRect:NSMakeRect(point.x, point.y, size.width + 8, size.height + 4)];
+    [string drawAtPoint:NSMakePoint(point.x + 4, point.y + 2)];
 }
 
 - (void)drawPointer
